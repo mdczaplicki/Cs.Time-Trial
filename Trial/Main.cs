@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Media;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Trial.Properties;
 
@@ -16,19 +10,18 @@ namespace Trial
 {
     public partial class Main : Form
     {
-        private Int16 levels = 10;
-        private Int16 level = 0;
-        private Random rand = new Random();
-        private List<int> ans;
-        private List<int> color;
-        private List<double> scores;
-        private SoundPlayer sp;
-        private int choose;
-        private bool start = true;
-        private bool instruction = true;
-        private double penalty, penaltyTotal;
-        private Color[] colors = new Color[]
-        {
+        private Int16 _levels = 10;
+        private Int16 _level;
+        private Random _rand = new Random();
+        private List<int> _ans;
+        private List<int> _color;
+        private List<double> _scores;
+        private SoundPlayer _sp;
+        private int _choose;
+        private bool _start = true;
+        private bool _instruction = true;
+        private double _penalty, _penaltyTotal;
+        private readonly Color[] _colors = {
             Color.Red,
             Color.Blue,
             Color.Yellow,
@@ -37,8 +30,7 @@ namespace Trial
             Color.Purple,
             Color.Orange
         };
-        private String[] colorsString = new String[]
-        {
+        private readonly string[] _colorsString = {
             "Red",
             "Blue",
             "Yellow",
@@ -47,18 +39,16 @@ namespace Trial
             "Purple",
             "Orange"
         };
-        private Image[] animals = new Image[]
-        {
-            Properties.Resources.lion,
-            Properties.Resources.dog,
-            Properties.Resources.duck,
-            Properties.Resources.giraffe,
-            Properties.Resources.zebra,
-            Properties.Resources.cat,
-            Properties.Resources.monkey
+        private readonly Image[] _animals = {
+            Resources.lion,
+            Resources.dog,
+            Resources.duck,
+            Resources.giraffe,
+            Resources.zebra,
+            Resources.cat,
+            Resources.monkey
         };
-        private String[] animalsString = new String[]
-        {
+        private readonly string[] _animalsString = {
             "Lion",
             "Dog",
             "Duck",
@@ -67,19 +57,17 @@ namespace Trial
             "Cat",
             "Monkey"
         };
-        private SoundPlayer[] sounds = new SoundPlayer[]
-        {
-             new SoundPlayer(Properties.Resources.cat1),
-             new SoundPlayer(Properties.Resources.dog1),
-             new SoundPlayer(Properties.Resources.bird),
-             new SoundPlayer(Properties.Resources.chicken),
-             new SoundPlayer(Properties.Resources.frog),
-             new SoundPlayer(Properties.Resources.horse),
-             new SoundPlayer(Properties.Resources.cow)
+        private readonly SoundPlayer[] _sounds = {
+             new SoundPlayer(Resources.cat1),
+             new SoundPlayer(Resources.dog1),
+             new SoundPlayer(Resources.bird),
+             new SoundPlayer(Resources.chicken),
+             new SoundPlayer(Resources.frog),
+             new SoundPlayer(Resources.horse),
+             new SoundPlayer(Resources.cow)
 
         };
-        private String[] soundsString = new String[]
-        {
+        private readonly string[] _soundsString = {
             "Cat",
             "Dog",
             "Bird",
@@ -88,80 +76,78 @@ namespace Trial
             "Horse",
             "Cow"
         };
-        System.Diagnostics.Stopwatch stopWatch;
-        TimeSpan timeSpan;
+
+        private Stopwatch _stopWatch;
+        TimeSpan _timeSpan;
 
         public Main()
         {
             InitializeComponent();
 
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            StartPosition = FormStartPosition.CenterScreen;
+            MaximizeBox = false;
         }
 
         #region Handlers
-        private void startButtonClick(object o, EventArgs e)
+        private void StartButtonClick(object o, EventArgs e)
         {
             MessageBoxButtons messageButtons = MessageBoxButtons.YesNo;
-            if (instruction && MessageBox.Show(
-                "In this game you are suppose to solve the puzzles.\n" +
-                "There are colors, animals and their sounds to recognize\n" +
-                "Be fast, because time is your score in this game!\n\n" +
-                "Would you like to see this instruction again?", 
-                "Instruction", messageButtons) == DialogResult.No)
+            if (_instruction && MessageBox.Show(
+                Resources.Main_startButtonClick_, 
+                @"Instruction", messageButtons) == DialogResult.No)
             {
-                this.instruction = false;
+                _instruction = false;
             }
 
-            this.Controls.Remove(this.menuPanel);
-            this.DesktopLocation = new Point(
+            Controls.Remove(menuPanel);
+            DesktopLocation = new Point(
                 DesktopLocation.X - 100,
                 DesktopLocation.Y - 100);
-            scores = new List<double>();
-            level = 0;
-            start = true;
-            penaltyTotal = 0;
+            _scores = new List<double>();
+            _level = 0;
+            _start = true;
+            _penaltyTotal = 0;
             
-            this.InitializeGame(); 
+            InitializeGame(); 
 
 
-            this.LevelGenerator();
+            LevelGenerator();
         }
 
-        private void tryButtonClick(object o, EventArgs e)
+        private void TryButtonClick(object o, EventArgs e)
         {
-            this.Controls.Remove(this.menuPanel);
-            this.DesktopLocation = new Point(
+            Controls.Remove(menuPanel);
+            DesktopLocation = new Point(
                 DesktopLocation.X - 100,
                 DesktopLocation.Y - 100);
-            scores = new List<double>();
-            level = 0;
-            start = false;
-            penaltyTotal = 0;
-            this.InitializeGame();
-            this.LevelGenerator();
+            _scores = new List<double>();
+            _level = 0;
+            _start = false;
+            _penaltyTotal = 0;
+            InitializeGame();
+            LevelGenerator();
         }
 
-        private void quitButtonClick(object o, EventArgs e)
+        private void QuitButtonClick(object o, EventArgs e)
         {
             Application.Exit();
         }
         
-        private void checkAns(object o, EventArgs e)
+        private void CheckAns(object o, EventArgs e)
         {
             Button b = (Button)o;
-            if ((String)b.Tag == "Right")
+            if ((string)b.Tag == "Right")
             {
-                if (choose == 1) sp.Stop();
-                stopWatch.Stop();
-                timeSpan = stopWatch.Elapsed;
-                scores.Add(timeSpan.TotalSeconds + penalty);
+                if (_choose == 1) _sp.Stop();
+                _stopWatch.Stop();
+                _timeSpan = _stopWatch.Elapsed;
+                _scores.Add(_timeSpan.TotalSeconds + _penalty);
 
-                if (level < levels) LevelGenerator();
+                if (_level < _levels) LevelGenerator();
                 else FinishGame();
             }
-            else { penalty++; penaltyTotal++; }
+            else { _penalty++; _penaltyTotal++; }
         }
         #endregion
     }

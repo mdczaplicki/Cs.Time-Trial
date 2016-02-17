@@ -13,10 +13,8 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing)
+                components?.Dispose();
             base.Dispose(disposing);
         }
 
@@ -54,7 +52,7 @@
             this.quitButton.TabIndex = 2;
             this.quitButton.Text = "Quit";
             this.quitButton.UseVisualStyleBackColor = true;
-            this.quitButton.Click += this.quitButtonClick;
+            this.quitButton.Click += this.QuitButtonClick;
             // 
             // tryButton
             // 
@@ -65,7 +63,7 @@
             this.tryButton.TabIndex = 1;
             this.tryButton.Text = "Try";
             this.tryButton.UseVisualStyleBackColor = true;
-            this.tryButton.Click += this.tryButtonClick;
+            this.tryButton.Click += this.TryButtonClick;
             // 
             // startButton
             // 
@@ -76,7 +74,7 @@
             this.startButton.TabIndex = 0;
             this.startButton.Text = "Start";
             this.startButton.UseVisualStyleBackColor = true;
-            this.startButton.Click += this.startButtonClick;
+            this.startButton.Click += this.StartButtonClick;
             // 
             // Main
             // 
